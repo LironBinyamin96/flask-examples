@@ -1,12 +1,12 @@
 pipeline {
     agent any
-
     stages {
         stage('Build Docker Image') {
             agent {
                 docker {
-                    image 'docker:latest'
+                    image 'docker:19.03.12'
                     reuseNode true
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
@@ -18,8 +18,9 @@ pipeline {
         stage('Push to DockerHub') {
             agent {
                 docker {
-                    image 'docker:latest'
+                    image 'docker:19.03.12'
                     reuseNode true
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
