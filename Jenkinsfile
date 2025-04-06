@@ -32,6 +32,13 @@ pipeline {
             }
         }
 
+
+         stage('Snyk Security Scan') {
+            steps {
+                snykSecurity snykInstallation: 'snyk-image-test', snykTokenId: 'snyk-token'
+            }
+        }
+
         stage('Logout from DockerHub') {
             steps {
                 sh 'docker logout'
