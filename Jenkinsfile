@@ -22,6 +22,7 @@ pipeline {
             steps {
                 script {
                     sh 'docker push lironbinyamin/flask-container-snyk:latest'
+                    sh snykSecurity snykInstallation: 'snyk-image-test', snykTokenId: 'snyk-token'
                 }
             }
         }
