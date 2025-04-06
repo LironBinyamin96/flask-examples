@@ -1,42 +1,37 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'lironbinyamin/flask-container-snyk-pipeline'
-        TAG = "${new Date().format('yyyy-MM-dd')}"
-    }
-
     stages {
         stage('Build Docker Image') {
             agent {
                 docker {
-                    image 'docker:24.0.7'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                    image 'docker:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker'
                     reuseNode true
                 }
             }
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
+                checkout scm
+                sh 'docker build -t lironbinyamin/flask-container-snyk:latest .'
             }
         }
 
         stage('Push to DockerHub') {
             agent {
                 docker {
-                    image 'docker:24.0.7'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                    image 'docker:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -v $(which docker):/usr/bin/docker'
                     reuseNode true
                 }
             }
-            environment {
-                DOCKERHUB_USERNAME = credentials('dockerhub-credentials')
-            }
             steps {
-                sh "echo ${DOCKERHUB_USERNAME_PSW} | docker login -u ${DOCKERHUB_USERNAME_USR} --password-stdin"
-                sh "docker push ${IMAGE_NAME}:${TAG}"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                    sh '''
+                        echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                        docker push lironbinyamin/flask-container-snyk:latest
+                    '''
+                }
             }
         }
     }
-}
-
 }
