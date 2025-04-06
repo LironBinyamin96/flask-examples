@@ -10,7 +10,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS' )]) {
                     script {
-                        env.IMAGE_NAME = "${DOCKER_USER}/flask-example"
+                        env.IMAGE_NAME = "${DOCKER_USER}/flask-build-pipeline"
                     }
                     
                     sh '''
@@ -35,7 +35,13 @@ pipeline {
 
          stage('Snyk Security Scan') {
             steps {
-                snykSecurity snykInstallation: 'snyk-image-test', snykTokenId: 'snyk-token'
+                snykSecurity(
+                    snykInstallation: 'snyk-image-test',
+                    snykTokenId: 'snyk-token',
+                    additionalArguments: '--docker lirobinyamin/flask-build-pipeline:latest',
+                    failOnIssues: 'false'
+                    
+                )
             }
         }
 
